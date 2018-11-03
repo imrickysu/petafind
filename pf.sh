@@ -1,12 +1,12 @@
 # make sure this is a petalinux directory
 function pfroot {
    local cwd_tmp="$PWD"
-   petalinux_proj_base='' #global
+   petalinux_project_base='' #global
 
    for(( ; ; ))
    do
       if [ "$cwd_tmp" = '/' ]; then
-         if [ "$petalinux_proj_base" = '' ]; then
+         if [ "$petalinux_project_base" = '' ]; then
             echo Note: NOT in a PetaLinux project directory
             return
          fi
@@ -15,9 +15,9 @@ function pfroot {
 
       if [ -d "$cwd_tmp/.petalinux" ]; then
       # Control will enter here if $DIRECTORY exists.
-         petalinux_proj_base="$cwd_tmp"
-         export petalinux_proj_base="$cwd_tmp"
-         echo Project Base: $petalinux_proj_base
+         petalinux_project_base="$cwd_tmp"
+         export petalinux_project_base="$cwd_tmp"
+         echo Project Base: $petalinux_project_base
       fi
 
       # test upper directory
@@ -25,15 +25,45 @@ function pfroot {
    done
 }
 
+# Check project version, target SoC family
+# Output
+# - petalinux_project_version
+# - petalinux_project_metauser
+# - petalinux_project_family
 function petalinux_project_metadata {
-   if [ -a ${petalinux_proj_base} ]; then
-      metadata_path=${petalinux_proj_base}/.petalinux/metadata
+   if [ -a ${petalinux_project_base} ]; then
+      metadata_path=${petalinux_project_base}/.petalinux/metadata
       if [ -a ${metadata_path} ]; then
           read line < ${metadata_path} # read file to line
          IFS='=' read -r name value <<< "$line" # split line to name and value
-         export petalinux_proj_version=$value
-         echo PetaLinux Project Version: ${petalinux_proj_version}
-         export petalinux_project_metauser=${petalinux_proj_base}/project-spec/meta-user
+         export petalinux_project_version=$value
+         echo PetaLinux Project Version: ${petalinux_project_version}
+
+         # meta-user path
+         export petalinux_project_metauser=${petalinux_project_base}/project-spec/meta-user
+      fi
+
+      # family
+      config_path=${petalinux_project_base}/project-spec/configs/config
+      if [ -a ${config_path} ]; then
+         if grep -q BOOTLOADER_NAME_ZYNQ_FSBL ${config_path}; then
+            petalinux_project_family="zynq"
+         fi
+         if grep -q BOOTLOADER_NAME_ZYNQMP_FSBL ${config_path}; then
+            petalinux_project_family="zynqMP"
+         fi
+         if grep -q BOOTLOADER_NAME_FS_BOOT ${config_path}; then
+            petalinux_project_family="microblaze"
+         fi
+
+         if [[ ${petalinux_project_family} ==  "" ]]; then
+            echo PetaLinux Project Family: Not found
+            exit
+         else
+            echo PetaLinux Project Family: ${petalinux_project_family}
+            export petalinux_project_family=${petalinux_project_family}
+         fi
+
       fi
    fi
 }

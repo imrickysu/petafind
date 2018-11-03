@@ -48,12 +48,15 @@ function petalinux_project_metadata {
       if [ -a ${config_path} ]; then
          if grep -q BOOTLOADER_NAME_ZYNQ_FSBL ${config_path}; then
             petalinux_project_family="zynq"
+            petalinux_project_arch="arm"
          fi
          if grep -q BOOTLOADER_NAME_ZYNQMP_FSBL ${config_path}; then
             petalinux_project_family="zynqMP"
+            petalinux_project_arch="aarch64"
          fi
          if grep -q BOOTLOADER_NAME_FS_BOOT ${config_path}; then
             petalinux_project_family="microblaze"
+            petalinux_project_arch="microblaze_full"
          fi
 
          if [[ ${petalinux_project_family} ==  "" ]]; then
@@ -62,6 +65,7 @@ function petalinux_project_metadata {
          else
             echo PetaLinux Project Family: ${petalinux_project_family}
             export petalinux_project_family=${petalinux_project_family}
+            export petalinux_project_arch=${petalinux_project_arch}
          fi
 
       fi
@@ -93,7 +97,7 @@ function petafind  {
       echo "Please source PetaLinux settings.sh"
       return
    else
-      petalinux_install_yocto_recipe=${PETALINUX}/
+      petalinux_install_yocto_recipe=${PETALINUX}/components/yocto/source/${petalinux_project_arch}/layers
 
    fi
    
@@ -114,9 +118,11 @@ function petafind  {
       # Find recipe name in current project meta-user and petalinux installation directory
       # Check whether this recipe has been enabled in rootfs
       if [[ $2 != "" ]]; then
-         echo Searching $2 in ${petalinux_project_metauser}
+         printf "\nSearching $2 in project meta-user layer\n\n"
          find  ${petalinux_project_metauser} -name "$2*.bb*"
          #TODO: find $2 in ${petalinux_install_yocto_recipe}
+         printf "\nSearching $2 in PetaLinux installation directory for ${petalinux_project_arch}\n\n"
+         find ${petalinux_install_yocto_recipe} -name "$2*.bb*"
       fi
 
       # If no keyword

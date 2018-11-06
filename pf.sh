@@ -70,7 +70,19 @@ function petalinux_project_metadata {
 
          # tmp (for build log)
 
+         tmp_loc=$(grep CONFIG_TMP_DIR_LOCATION ${petalinux_project_base}/project-spec/configs/config)
+         # echo ${tmp_loc}
+         
+         IFS='=' read -r name value <<< "$tmp_loc" # split line to name and value
+         
+         # remove "" of value
+         value=${value#'"'}
+         value=${value%'"'}
+         # echo ${value}
 
+         petalinux_project_tmp=$value
+
+         echo "PetaLinux Project TMP: ${petalinux_project_tmp}"
 
          echo ""
 
@@ -163,7 +175,7 @@ function petafind  {
       "log" )
       # Print the build log location
       # If keyward is available, filter log name with keyword
-
+      petalinux_project_log=${petalinux_project_tmp}/work
 
       ;;
 

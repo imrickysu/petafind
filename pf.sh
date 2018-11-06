@@ -68,20 +68,28 @@ function petalinux_project_metadata {
             export petalinux_project_arch=${petalinux_project_arch}
          fi
 
+         # tmp (for build log)
+
+
+
+         echo ""
+
       fi
    fi
 }
 
 function petafind  {
    # print banner
+   echo "--------------------------"
    echo "petafind v0.1"
+   echo "--------------------------"
    echo ""
 
    # print help when no options
    if [ $# -eq 0 ]; then
       echo "Usage:"
       echo "petafind <type> <keyword>"
-      echo "- type: recipe, bsp, log, kernelconfig, dts, root, tmp"
+      echo "- type: recipe, bsp, log, config, dts, root, tmp, u-boot"
       echo "- keyword: the sarch target of type"
       return 
    fi
@@ -89,7 +97,7 @@ function petafind  {
    # Has at least one option
 
    # Check whether this is a petalinux project directory
-   pfroot #if not will return
+   pfroot #if not will return. So all below assumes in petalinux project
    petalinux_project_metadata
 
    # Check tool environment
@@ -110,6 +118,16 @@ function petafind  {
 
       ;;
 
+      "u-boot" | "u" )
+      echo "U-boot Configuration Files"
+      petalinux_project_uboot_platform_top=${petalinux_project_metauser}/recipes-bsp/u-boot/files/platform-top.h
+      if [ -a ${petalinux_project_uboot_platform_top} ]; then
+         echo "platform-top.h: ${petalinux_project_uboot_platform_top}"
+      fi
+
+
+      ;;
+
 
       "recipe" | "r" )
 
@@ -119,29 +137,58 @@ function petafind  {
       # Check whether this recipe has been enabled in rootfs
       if [[ $2 != "" ]]; then
          printf "\nSearching $2 in project meta-user layer\n\n"
-         find  ${petalinux_project_metauser} -name "$2*.bb*"
+         find  ${petalinux_project_metauser} -name "$2"
          #TODO: find $2 in ${petalinux_install_yocto_recipe}
          printf "\nSearching $2 in PetaLinux installation directory for ${petalinux_project_arch}\n\n"
-         find ${petalinux_install_yocto_recipe} -name "$2*.bb*"
-      fi
+         find ${petalinux_install_yocto_recipe} -name "$2"
+      else
 
       # If no keyword
       # print recipe directory
+         echo "Project meta-user layer"
+         printf "\t${petalinux_project_metauser}\n"
 
+         echo "PetaLinux Install Yocto layer for ${petalinux_project_arch}"
+         printf "\t${petalinux_install_yocto_recipe}\n"
+      fi
 
       ;;
 
       "bsp" )
-
+      # Print the BSP location
+      # If keyword is available, filter with keyword
 
       ;;
 
       "log" )
+      # Print the build log location
+      # If keyward is available, filter log name with keyword
 
 
       ;;
 
-      "kernelconfig" )
+      "config" )
+      # Print the path of 
+      # - project configuration
+      # - rootfs configurations
+      # - rootfs image configuration
+      # - kernel configuration
+
+
+      ;;
+
+      "dts" )
+      # Print all dts and dtsi file locations
+
+      ;;
+
+      "tmp" )
+
+      if [ -a ${petalinux_project_base}/project-spec/configs/config ]; then
+         grep TMP ${petalinux_project_base}/project-spec/configs/config
+      else
+         echo "Error: project configure file not found"
+      fi
 
       ;;
 

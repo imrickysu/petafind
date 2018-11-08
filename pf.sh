@@ -1,3 +1,6 @@
+set -E
+trap 'echo Failed on line: $LINENO at command: $BASH_COMMAND && exit $?' ERR
+
 # make sure this is a petalinux directory
 function pfroot {
    local cwd_tmp="$PWD"
@@ -8,6 +11,7 @@ function pfroot {
       if [ "$cwd_tmp" = '/' ]; then
          if [ "$petalinux_project_base" = '' ]; then
             echo Note: NOT in a PetaLinux project directory
+            export petafind_in_project_dir=0
             return
          fi
          break;
@@ -17,6 +21,7 @@ function pfroot {
       # Control will enter here if $DIRECTORY exists.
          petalinux_project_base="$cwd_tmp"
          export petalinux_project_base="$cwd_tmp"
+         export petafind_in_project_dir=1
          echo Project Base: $petalinux_project_base
       fi
 
@@ -32,6 +37,7 @@ function pfroot {
 # - petalinux_project_family
 function petalinux_project_metadata {
    if [ -a ${petalinux_project_base} ]; then
+      echo -e "\n------ Project Metadata ------"
       metadata_path=${petalinux_project_base}/.petalinux/metadata
       if [ -a ${metadata_path} ]; then
           read line < ${metadata_path} # read file to line
@@ -113,16 +119,14 @@ function petafind  {
    petalinux_project_metadata
 
    # Check tool environment
-   if [ ${PETALINUX} == "" ]; then
-      echo "Please source PetaLinux settings.sh"
+   if [[ ${PETALINUX} == "" ]]; then
+      echo "Please source settings.sh in PetaLinux installation directory"
       return
    else
       petalinux_install_yocto_recipe=${PETALINUX}/components/yocto/source/${petalinux_project_arch}/layers
 
    fi
    
-
-
 
    case $1 in
 
@@ -131,7 +135,7 @@ function petafind  {
       ;;
 
       "u-boot" | "u" )
-      echo "U-boot Configuration Files"
+      echo -e "\n------ U-boot Configuration Files ------"
       petalinux_project_uboot_platform_top=${petalinux_project_metauser}/recipes-bsp/u-boot/files/platform-top.h
       if [ -a ${petalinux_project_uboot_platform_top} ]; then
          echo "platform-top.h: ${petalinux_project_uboot_platform_top}"
@@ -142,7 +146,7 @@ function petafind  {
 
 
       "recipe" | "r" )
-
+      echo -e "\n------ Search Recipes ------"
 
       # if with one keyword
       # Find recipe name in current project meta-user and petalinux installation directory
@@ -186,6 +190,36 @@ function petafind  {
       # - rootfs image configuration
       # - kernel configuration
 
+      # only work for petalinux project dir
+      if [ ${petafind_in_project_dir} -ne 1 ]; then
+         return
+      fi
+
+      echo -e "\n------ Project Configuration Files ------"
+
+      petalinux_project_config=${petalinux_project_base}/project-spec/configs/config
+      if [ -a ${petalinux_project_config} ]; then
+         echo -e "Project Config File: ${petalinux_project_config}"
+      else
+         echo -e "Project Config File: Not found"
+      fi
+
+      petalinux_project_rootfs_config=${petalinux_project_base}/project-spec/configs/rootfs_config
+      if [ -a ${petalinux_project_rootfs_config} ]; then
+         echo -e "\nProject Rootfs Config File: ${petalinux_project_rootfs_config}"
+      else
+         echo -e "\nProject Rootfs Config File: Not found"
+      fi
+
+      petalinux_project_rootfs_additional="${petalinux_project_base}/project-spec/meta-user/recipes-core/images/petalinux-image.bbappend"
+      if [ -a ${petalinux_project_rootfs_additional} ]; then
+         echo -e "\nProject Rootfs Additional Config: ${petalinux_project_rootfs_additional}"
+      else
+         echo -e "\nProject Rootfs Additional Config: Not found"
+      fi
+      echo -e "- Note: Add recipes supported by Yocto but not listed in PetaLinux rootfs to IMAGE_INSTALL_append"
+
+      petalinux_project_kernel_config=${petalinux_project_tmp}
 
       ;;
 

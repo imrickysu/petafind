@@ -1,6 +1,3 @@
-set -E
-trap 'echo Failed on line: $LINENO at command: $BASH_COMMAND && exit $?' ERR
-
 # make sure this is a petalinux directory
 function pfroot {
    local cwd_tmp="$PWD"
@@ -43,10 +40,12 @@ function petalinux_project_metadata {
           read line < ${metadata_path} # read file to line
          IFS='=' read -r name value <<< "$line" # split line to name and value
          export petalinux_project_version=$value
-         echo PetaLinux Project Version: ${petalinux_project_version}
+         echo "* Project Version: ${petalinux_project_version}"
 
          # meta-user path
          export petalinux_project_metauser=${petalinux_project_base}/project-spec/meta-user
+      else
+         echo "* Project Version: Unknown"
       fi
 
       # family
@@ -66,10 +65,10 @@ function petalinux_project_metadata {
          fi
 
          if [[ ${petalinux_project_family} ==  "" ]]; then
-            echo PetaLinux Project Family: Not found
+            echo "* Project Family: Not found"
             exit
          else
-            echo PetaLinux Project Family: ${petalinux_project_family}
+            echo "* Project Family: ${petalinux_project_family}"
             export petalinux_project_family=${petalinux_project_family}
             export petalinux_project_arch=${petalinux_project_arch}
          fi
@@ -88,7 +87,7 @@ function petalinux_project_metadata {
 
          petalinux_project_tmp=$value
 
-         echo "PetaLinux Project TMP: ${petalinux_project_tmp}"
+         echo "* Project TMP: ${petalinux_project_tmp}"
 
          echo ""
 
@@ -199,27 +198,37 @@ function petafind  {
 
       petalinux_project_config=${petalinux_project_base}/project-spec/configs/config
       if [ -a ${petalinux_project_config} ]; then
-         echo -e "Project Config File: ${petalinux_project_config}"
+         echo -e "* Project Config File: "
+         echo "${petalinux_project_config}"
       else
-         echo -e "Project Config File: Not found"
+         echo -e "* Project Config File: Not found"
       fi
 
       petalinux_project_rootfs_config=${petalinux_project_base}/project-spec/configs/rootfs_config
       if [ -a ${petalinux_project_rootfs_config} ]; then
-         echo -e "\nProject Rootfs Config File: ${petalinux_project_rootfs_config}"
+         echo -e "\n* Project Rootfs Config File: "
+         echo "${petalinux_project_rootfs_config}"
       else
-         echo -e "\nProject Rootfs Config File: Not found"
+         echo -e "\n* Project Rootfs Config File: Not found"
       fi
 
       petalinux_project_rootfs_additional="${petalinux_project_base}/project-spec/meta-user/recipes-core/images/petalinux-image.bbappend"
       if [ -a ${petalinux_project_rootfs_additional} ]; then
-         echo -e "\nProject Rootfs Additional Config: ${petalinux_project_rootfs_additional}"
+         echo -e "\n* Project Rootfs Additional Config: "
+         echo "${petalinux_project_rootfs_additional}"
       else
-         echo -e "\nProject Rootfs Additional Config: Not found"
+         echo -e "\n* Project Rootfs Additional Config: Not found"
       fi
       echo -e "- Note: Add recipes supported by Yocto but not listed in PetaLinux rootfs to IMAGE_INSTALL_append"
 
-      petalinux_project_kernel_config=${petalinux_project_tmp}
+      # kernel config path is related to family
+      if [[ ${petalinux_project_family} == "zynqMP" ]]; then
+         petalinux_project_kernel_config=${petalinux_project_tmp}/work-shared/plnx-zynqmp/kernel-build-artifacts/.config
+      fi
+      if [ -a ${petalinux_project_kernel_config} ]; then
+         echo -e "\n* Project Final Kernel Config: "
+         echo "${petalinux_project_kernel_config}"
+      fi
 
       ;;
 

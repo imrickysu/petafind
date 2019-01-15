@@ -97,9 +97,9 @@ function petalinux_project_metadata {
 
 function petafind  {
    # print banner
-   echo "--------------------------"
-   echo "petafind v0.1"
-   echo "--------------------------"
+#   echo "--------------------------"
+   echo "-- petafind v0.1 --"
+#   echo "--------------------------"
    echo ""
 
    # print help when no options
@@ -176,9 +176,13 @@ function petafind  {
       ;;
 
       "log" )
+      # TODO
       # Print the build log location
       # If keyward is available, filter log name with keyword
       petalinux_project_log=${petalinux_project_tmp}/work
+
+      # Special command: petafind log list
+      # - list all the log apps in temp/work
 
       ;;
 
@@ -250,3 +254,12 @@ function petafind  {
    esac
  
 }
+
+alias petaroot='pfroot; cd $petalinux_proj_base'
+alias petatmp='petafind tmp'
+
+echo "-- PetaFind Utilities v0.1 --"
+echo "petaroot: cd to petalinux project root directory"
+echo "petatmp: print petalinux project tmp directory"
+echo "petafind: find recipes, tmp of petalinux project"
+

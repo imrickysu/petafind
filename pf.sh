@@ -255,7 +255,7 @@ function petafind  {
  
 }
 
-alias petaroot='pfroot; cd $petalinux_proj_base'
+alias petaroot='pfroot; cd $petalinux_project_base'
 alias petatmp='petafind tmp'
 
 echo "-- PetaFind Utilities v0.1 --"

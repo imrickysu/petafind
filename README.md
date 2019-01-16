@@ -160,3 +160,8 @@ Project Base: /xxx/petalinux_2018.2_proj
 platform-top.h: /xxx/petalinux_2018.2_proj/project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h
 
 ```
+
+## Contribute
+Welcome to fork([?](https://help.github.com/articles/fork-a-repo/)) this project and add your modifications.
+
+Bug report and feature requests are also welcome via github [issues](https://github.com/imrickysu/petafind/issues) tab
